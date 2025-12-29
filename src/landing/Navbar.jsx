@@ -1,5 +1,5 @@
 import { useState } from "react";
-import SignInModal from "./SignInModal";
+import SignInModal from "../auth/SignInModal";
 import DownloadModal from "./DownloadModal";
 
 const Navbar = () => {
