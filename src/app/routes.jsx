@@ -4,7 +4,7 @@ import DashboardHome from "../dashboard/DashboardHome";
 import ProtectedRoute from "./ProtectedRoute";
 import { useAuth } from "../auth/AuthContext";
 import ComingSoon from "../landing/ComingSoon";
-
+import MenuPage from "../menu/MenuPage";
 const AppRoutes = () => {
   const { profile, loading } = useAuth();
 
