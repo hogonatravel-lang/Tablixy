@@ -16,6 +16,9 @@ const AppRoutes = () => {
       {/* Landing Page */}
       <Route path="/" element={<LandingPage />} />
 
+      {/* Public Menu Route (QR) */}
+      <Route path="/menu/:hotelId" element={<MenuPage />} />
+
       {/* Coming Soon for Staff or Guest */}
       <Route path="/coming-soon/:role" element={<ComingSoon />} />
 
@@ -34,7 +37,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
+      
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
