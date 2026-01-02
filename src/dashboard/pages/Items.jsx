@@ -265,7 +265,7 @@ const Items = ({ hotelId }) => {
   /* Placeholder */
   .filters input::placeholder,
   .modal input::placeholder {
-    color:#9ca3af;
+    color:#dfe1e6;
   }
 
   /* Focus effect */
@@ -274,7 +274,7 @@ const Items = ({ hotelId }) => {
   .modal input:focus,
   .modal select:focus {
     border-color:#00ff66;
-    box-shadow:0 0 0 2px rgba(0,255,102,0.25);
+    box-shadow:0 0 0 2px rgba(11, 152, 67, 0.25);
   }
 
   /* Grid */

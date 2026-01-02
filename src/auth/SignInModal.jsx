@@ -11,9 +11,16 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { User, Users, Hotel } from "lucide-react";
 
 const generateHotelId = () =>
   "HTL-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+const roles = [
+  { key: "manager", label: "Manager", icon: <Hotel size={28} /> },
+  { key: "staff", label: "Staff", icon: <Users size={28} /> },
+  { key: "guest", label: "Guest", icon: <User size={28} /> },
+];
 
 const SignInModal = ({ onClose }) => {
   const navigate = useNavigate();
@@ -38,6 +45,7 @@ const SignInModal = ({ onClose }) => {
     hotelId: "",
   });
 
+  /* ---------------- AUTH ---------------- */
   const handleAuth = async () => {
     if (!role) return setError("Please select a role");
 
@@ -57,29 +65,23 @@ const SignInModal = ({ onClose }) => {
       const snap = await getDoc(userRef);
 
       if (!snap.exists()) {
-  // NEW USER
-  await setDoc(userRef, {
-    email,
-    role,
-    createdAt: serverTimestamp(),
-  });
+        await setDoc(userRef, {
+          email,
+          role,
+          createdAt: serverTimestamp(),
+        });
 
-  if (role === "manager" || role === "staff") {
-    setStep(3); // onboarding needed
-  } else {
-    navigate("/coming-soon/guest");
-  }
-
-} else {
-  // EXISTING USER → READ ROLE FROM DB
-  const dbRole = snap.data().role;
-
-  if (dbRole === "manager") {
-    navigate("/dashboard");
-  } else {
-    navigate(`/coming-soon/${dbRole}`);
-  }
-}
+        if (role === "manager" || role === "staff") {
+          setStep(3);
+        } else {
+          navigate("/coming-soon/guest");
+        }
+      } else {
+        const dbRole = snap.data().role;
+        dbRole === "manager"
+          ? navigate("/dashboard")
+          : navigate(`/coming-soon/${dbRole}`);
+      }
     } catch (e) {
       setError(e.message);
     }
@@ -87,6 +89,7 @@ const SignInModal = ({ onClose }) => {
     setLoading(false);
   };
 
+  /* ---------------- ONBOARDING ---------------- */
   const submitOnboarding = async () => {
     setLoading(true);
     setError("");
@@ -106,12 +109,7 @@ const SignInModal = ({ onClose }) => {
           createdAt: serverTimestamp(),
         });
 
-        await setDoc(
-          doc(db, "users", uid),
-          { role, hotelId },
-          { merge: true }
-        );
-
+        await setDoc(doc(db, "users", uid), { role, hotelId }, { merge: true });
         navigate("/dashboard");
       }
 
@@ -121,6 +119,7 @@ const SignInModal = ({ onClose }) => {
 
         await setDoc(doc(db, "staff", uid), {
           ...staff,
+          verified: false, // ✅ REQUIRED FIELD
           createdAt: serverTimestamp(),
         });
 
@@ -141,12 +140,11 @@ const SignInModal = ({ onClose }) => {
 
   return (
     <>
-      {/* COMPONENT-ONLY CSS */}
       <style>{`
         .modal-backdrop {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.75);
+          background: rgba(0,0,0,0.8);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -155,12 +153,36 @@ const SignInModal = ({ onClose }) => {
 
         .modal-card {
           background: #05100a;
-          border-radius: 18px;
-          padding: 24px;
+          border-radius: 20px;
+          padding: 26px;
           width: 100%;
-          max-width: 420px;
+          max-width: 440px;
           color: white;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        .role-grid {
+          display: grid;
+          grid-template-columns: repeat(3,1fr);
+          gap: 14px;
+          margin-top: 20px;
+        }
+
+        .role-card {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 18px 10px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .role-card.active {
+          border-color: #00ff66;
+          background: rgba(0,255,102,0.1);
         }
 
         .input {
@@ -171,7 +193,6 @@ const SignInModal = ({ onClose }) => {
           border: 1px solid rgba(255,255,255,0.15);
           color: white;
           margin-bottom: 14px;
-          outline: none;
         }
 
         .btn {
@@ -181,18 +202,7 @@ const SignInModal = ({ onClose }) => {
           background: #00ff66;
           color: #000;
           font-weight: 700;
-          margin-bottom: 12px;
           cursor: pointer;
-        }
-
-        .btn:disabled {
-          opacity: 0.6;
-        }
-
-        .close-btn {
-          float: right;
-          cursor: pointer;
-          opacity: 0.7;
         }
 
         .error {
@@ -204,33 +214,36 @@ const SignInModal = ({ onClose }) => {
 
       <div className="modal-backdrop">
         <div className="modal-card">
-          <span onClick={onClose} className="close-btn">✕</span>
-
           {step === 1 && (
             <>
-              <h2>Select Role</h2>
-              {["manager", "staff", "guest"].map(r => (
-                <button
-                  key={r}
-                  className="btn"
-                  onClick={() => {
-                    setRole(r);
-                    setStep(2);
-                  }}
-                >
-                  {r.toUpperCase()}
-                </button>
-              ))}
+              <h2 className="text-xl font-semibold">Select your role</h2>
+              <p className="text-sm text-white/60">Choose how you want to continue</p>
+
+              <div className="role-grid">
+                {roles.map(r => (
+                  <div
+                    key={r.key}
+                    className={`role-card ${role === r.key ? "active" : ""}`}
+                    onClick={() => {
+                      setRole(r.key);
+                      setStep(2);
+                    }}
+                  >
+                    {r.icon}
+                    <span>{r.label}</span>
+                  </div>
+                ))}
+              </div>
             </>
           )}
 
           {step === 2 && (
             <>
-              <h3>Continue as {role}</h3>
+              <h3 className="mb-3">Continue as {role}</h3>
               <input className="input" placeholder="Email" onChange={e=>setEmail(e.target.value)} />
               <input className="input" type="password" placeholder="Password" onChange={e=>setPassword(e.target.value)} />
-              <button className="btn" onClick={handleAuth} disabled={loading}>
-                {loading ? "Please wait..." : "Continue"}
+              <button className="btn" onClick={handleAuth}>
+                Continue
               </button>
             </>
           )}
@@ -251,7 +264,7 @@ const SignInModal = ({ onClose }) => {
               <h3>Join Hotel</h3>
               <input className="input" placeholder="Your Name" onChange={e=>setStaff({...staff, name:e.target.value})} />
               <input className="input" placeholder="Hotel ID" onChange={e=>setStaff({...staff, hotelId:e.target.value})} />
-              <button className="btn" onClick={submitOnboarding}>Join</button>
+              <button className="btn" onClick={submitOnboarding}>Request Access</button>
             </>
           )}
 
