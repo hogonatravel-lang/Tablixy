@@ -38,7 +38,7 @@ const DashboardHome = () => {
     <div className="dashboard flex min-h-screen bg-[#0b1a10] text-white">
       <Sidebar profile={profile} activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 p-4">
-        <Topbar profile={profile} />
+        <Topbar profile={profile} hotel={hotel} />
         {activeTab === "overview" && <Overview hotel={hotel} profile={profile} />}
         {activeTab === "items" && profile.role === "manager" && <Items hotelId={hotel.hotelId} />}
         {activeTab === "staff" && profile.role === "manager" && <Staff hotelId={hotel.hotelId} />}
