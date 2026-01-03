@@ -78,9 +78,9 @@ const SignInModal = ({ onClose }) => {
         }
       } else {
         const dbRole = snap.data().role;
-        dbRole === "manager"
-          ? navigate("/dashboard")
-          : navigate(`/coming-soon/${dbRole}`);
+        if (dbRole === "manager") navigate("/dashboard");
+else if (dbRole === "staff") navigate("/staff/StaffDashboard");
+else navigate("/coming-soon/guest");
       }
     } catch (e) {
       setError(e.message);
@@ -129,7 +129,7 @@ const SignInModal = ({ onClose }) => {
           { merge: true }
         );
 
-        navigate("/coming-soon/staff");
+        navigate("/staff/StaffDashboard");
       }
     } catch (e) {
       setError(e.message);
@@ -210,6 +210,24 @@ const SignInModal = ({ onClose }) => {
           margin-top: 12px;
           font-size: 14px;
         }
+          .spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0,0,0,0.2);
+  border-top: 3px solid #000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
       `}</style>
 
       <div className="modal-backdrop">
@@ -242,9 +260,9 @@ const SignInModal = ({ onClose }) => {
               <h3 className="mb-3">Continue as {role}</h3>
               <input className="input" placeholder="Email" onChange={e=>setEmail(e.target.value)} />
               <input className="input" type="password" placeholder="Password" onChange={e=>setPassword(e.target.value)} />
-              <button className="btn" onClick={handleAuth}>
-                Continue
-              </button>
+              <button className="btn" onClick={handleAuth} disabled={loading}>
+  {loading ? <div className="spinner"></div> : "Continue"}
+</button>
             </>
           )}
 
@@ -256,6 +274,9 @@ const SignInModal = ({ onClose }) => {
               <input className="input" type="number" placeholder="Tables" onChange={e=>setManager({...manager, tables:e.target.value})} />
               <input className="input" placeholder="Location" onChange={e=>setManager({...manager, location:e.target.value})} />
               <button className="btn" onClick={submitOnboarding}>Create Hotel</button>
+              <button className="btn" onClick={submitOnboarding} disabled={loading}>
+  {loading ? <div className="spinner"></div> : "Create Hotel"}
+</button>
             </>
           )}
 
@@ -264,7 +285,10 @@ const SignInModal = ({ onClose }) => {
               <h3>Join Hotel</h3>
               <input className="input" placeholder="Your Name" onChange={e=>setStaff({...staff, name:e.target.value})} />
               <input className="input" placeholder="Hotel ID" onChange={e=>setStaff({...staff, hotelId:e.target.value})} />
-              <button className="btn" onClick={submitOnboarding}>Request Access</button>
+              <button className="btn" onClick={submitOnboarding} disabled={loading}>
+  {loading ? <div className="spinner"></div> : "Request Access"}
+</button>
+
             </>
           )}
 

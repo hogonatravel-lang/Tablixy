@@ -2,6 +2,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 const MenuPage = () => {
   const { hotelId } = useParams();
@@ -41,6 +42,25 @@ const MenuPage = () => {
   };
 
   const totalItems = Object.values(cart).reduce((a, b) => a + b, 0);
+  const navigate = useNavigate();
+
+const placeOrder = () => {
+  const selectedItems = items
+    .filter(i => cart[i.id])
+    .map(i => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      qty: cart[i.id]
+    }));
+
+  navigate(`/order/${hotelId}`, {
+    state: {
+      tableNo,
+      items: selectedItems
+    }
+  });
+};
 
   return (
     <>
@@ -190,9 +210,10 @@ const MenuPage = () => {
         {/* ORDER BAR */}
         {totalItems > 0 && (
           <div className="order-bar">
-            <button className="order-btn">
-              Order ({totalItems} items)
+            <button className="order-btn" onClick={placeOrder}>
+            Order ({totalItems} items)
             </button>
+
           </div>
         )}
       </div>

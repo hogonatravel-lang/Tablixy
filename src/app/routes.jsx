@@ -5,6 +5,10 @@ import ProtectedRoute from "./ProtectedRoute";
 import { useAuth } from "../auth/AuthContext";
 import ComingSoon from "../landing/ComingSoon";
 import MenuPage from "../menu/MenuPage";
+import StaffDashboard from "../staff/StaffDashboard";
+import OrderPage from "../menu/OrderPage";
+import InvoicePage from "../menu/InvoicePage";
+
 const AppRoutes = () => {
   const { profile, loading } = useAuth();
 
@@ -13,31 +17,50 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Landing Page */}
+      {/* Public */}
       <Route path="/" element={<LandingPage />} />
-
-      {/* Public Menu Route (QR) */}
       <Route path="/menu/:hotelId" element={<MenuPage />} />
+      
+      {/* Order Flow (Public - QR Users) */}
+      <Route path="/order/:hotelId" element={<OrderPage />} />
+      <Route path="/invoice/:hotelId/:orderId" element={<InvoicePage />} />
 
-      {/* Coming Soon for Staff or Guest */}
-      <Route path="/coming-soon/:role" element={<ComingSoon />} />
-
-      {/* Dashboard for Manager */}
+      {/* Manager Dashboard */}
       <Route
-        path="/dashboard"
+        path="/dashboard/*"
+        element={
+          <ProtectedRoute role="manager">
+            <DashboardHome />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Staff Dashboard */}
+      <Route
+        path="/staff/StaffDashboard/*"
+        element={
+          <ProtectedRoute role="staff">
+            <StaffDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Smart Redirect */}
+      <Route
+        path="/redirect"
         element={
           <ProtectedRoute>
-            {!profile ? (
-              <Navigate to="/" replace />
-            ) : profile.role !== "manager" ? (
-              <Navigate to={`/coming-soon/${profile.role}`} replace />
+            {profile?.role === "manager" ? (
+              <Navigate to="/dashboard" replace />
+            ) : profile?.role === "staff" ? (
+              <Navigate to="/staff/StaffDashboard" replace />
             ) : (
-              <DashboardHome />
+              <Navigate to="/" replace />
             )}
           </ProtectedRoute>
         }
       />
-      
+
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
